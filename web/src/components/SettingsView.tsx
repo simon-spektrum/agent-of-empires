@@ -124,6 +124,10 @@ interface Props {
   onSelectProfile?: (profile: string) => void;
   /** Read-only server: the Profiles tab hides its create/edit controls. */
   readOnly?: boolean;
+  /** CityHall client mode: collapse Settings to the Theme tab only. The
+   *  general settings PATCH is closed server-side in this mode; theme still
+   *  writes through its own dedicated endpoint. See #7. */
+  themeOnly?: boolean;
 }
 
 const ALL_TAB_IDS = new Set<TabId>([
@@ -190,6 +194,7 @@ export function SettingsView({
   profile,
   onSelectProfile,
   readOnly,
+  themeOnly = false,
 }: Props) {
   const offline = useServerDown();
   const [settings, setSettings] = useState<Record<string, unknown> | null>(null);
@@ -225,9 +230,9 @@ export function SettingsView({
     },
     [onSelectProfile],
   );
-  const sidebar = buildSidebar();
+  const sidebar: SidebarItem[] = themeOnly ? [{ kind: "tab", id: "theme", label: "Theme" }] : buildSidebar();
   const tabs = sidebar.filter((s): s is { kind: "tab"; id: TabId; label: string } => s.kind === "tab");
-  const activeTab: TabId = isTabId(tab) ? tab : "session";
+  const activeTab: TabId = themeOnly ? "theme" : isTabId(tab) ? tab : "session";
   const [profiles, setProfiles] = useState<ProfileInfo[]>([]);
   // Settings schema (single source of truth, #1692). The generic SchemaSection
   // renderer builds sandbox/worktree from this; empty until the one-shot fetch

@@ -337,6 +337,10 @@ interface Props {
   onStopSession?: (workspaceId: string) => void;
   onStartSession?: (workspaceId: string) => void;
   readOnly?: boolean;
+  /** When false (CityHall client mode), the Projects management section is
+   *  hidden so end users cannot add, edit, or remove projects. Defaults to
+   *  true. See #7. */
+  canManageProjects?: boolean;
   sortMode: SidebarSortMode;
   onSortModeChange: (mode: SidebarSortMode) => void;
   pluginSortRef: { pluginId: string; entryId: string } | null;
@@ -2691,6 +2695,7 @@ export function WorkspaceSidebar({
   onStopSession,
   onStartSession,
   readOnly,
+  canManageProjects = true,
   sortMode,
   onSortModeChange,
   pluginSortRef,
@@ -3624,16 +3629,18 @@ export function WorkspaceSidebar({
             );
           })()}
 
-          <ProjectsSection
-            projects={savedProjects}
-            query={q}
-            readOnly={readOnly}
-            offline={offline}
-            onCreateSession={onCreateSession}
-            onAddProject={onAddProject}
-            onEditProject={onEditProject}
-            onRemoveProject={onRemoveProject}
-          />
+          {canManageProjects && (
+            <ProjectsSection
+              projects={savedProjects}
+              query={q}
+              readOnly={readOnly}
+              offline={offline}
+              onCreateSession={onCreateSession}
+              onAddProject={onAddProject}
+              onEditProject={onEditProject}
+              onRemoveProject={onRemoveProject}
+            />
+          )}
 
           {!hasResults && hasFilter && (
             <div className="px-4 py-8 text-center">
