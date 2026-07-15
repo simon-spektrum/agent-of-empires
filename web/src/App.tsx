@@ -1859,208 +1859,209 @@ function AppContent({
     tour.isTourActive,
   ]);
 
+  // Hold the shell behind a placeholder until /api/about resolves, so
+  // CityHall-gated affordances (Clone URL, advanced sidebar) never flash in
+  // before caps.cityhall settles. Early return (matching the other loading
+  // gates) rather than a wrapper so the shell markup stays unindented. See #7.
+  if (!serverAboutLoaded) {
+    return <div className="h-dvh bg-surface-900 safe-area-inset" />;
+  }
+
   return (
     <AcpPrefsProvider value={acpPrefs}>
-      {/* Hold the shell behind a placeholder until /api/about resolves, so
-          CityHall-gated affordances (Clone URL, advanced sidebar) never flash
-          in before caps.cityhall settles. See #7. */}
-      {!serverAboutLoaded ? (
-        <div className="h-dvh bg-surface-900 safe-area-inset" />
-      ) : (
-        <div className="h-dvh flex flex-col bg-surface-900 text-text-primary overflow-hidden safe-area-inset">
-          <TopBar
-            activeWorkspace={activeWorkspace}
-            activeSession={activeSession ?? null}
-            onToggleSidebar={handleToggleSidebar}
-            onOpenPalette={() => setShowPalette(true)}
-            onToggleDiff={toggleDiff}
-            paneIds={allPaneIds}
-            paneDescriptor={paneDescriptor}
-            isPaneOpen={isPaneOpen}
-            onTogglePane={togglePaneAny}
-            onOpenHelp={handleOpenHelp}
-            onOpenAbout={handleOpenAbout}
-            onStartTutorial={tour.startTour}
-            onLogout={onLogout}
-            loginRequired={loginRequired}
-            isOffline={!!error}
-            isDevBuild={isDebugBuild(serverAbout)}
-            onOpenTips={tips.open}
-            onGoDashboard={handleGoDashboard}
-            sidebarColumnVisible={!showSettings && sidebarOpen}
-            rightColumnVisible={isMdUp && !showSettings && !!activeWorkspace && !!activeSession && !rightDockCollapsed}
-          />
+      <div className="h-dvh flex flex-col bg-surface-900 text-text-primary overflow-hidden safe-area-inset">
+        <TopBar
+          activeWorkspace={activeWorkspace}
+          activeSession={activeSession ?? null}
+          onToggleSidebar={handleToggleSidebar}
+          onOpenPalette={() => setShowPalette(true)}
+          onToggleDiff={toggleDiff}
+          paneIds={allPaneIds}
+          paneDescriptor={paneDescriptor}
+          isPaneOpen={isPaneOpen}
+          onTogglePane={togglePaneAny}
+          onOpenHelp={handleOpenHelp}
+          onOpenAbout={handleOpenAbout}
+          onStartTutorial={tour.startTour}
+          onLogout={onLogout}
+          loginRequired={loginRequired}
+          isOffline={!!error}
+          isDevBuild={isDebugBuild(serverAbout)}
+          onOpenTips={tips.open}
+          onGoDashboard={handleGoDashboard}
+          sidebarColumnVisible={!showSettings && sidebarOpen}
+          rightColumnVisible={isMdUp && !showSettings && !!activeWorkspace && !!activeSession && !rightDockCollapsed}
+        />
 
-          <DisconnectBanner />
-          <UpdateBanner />
-          <DashboardUpdateBanner />
+        <DisconnectBanner />
+        <UpdateBanner />
+        <DashboardUpdateBanner />
 
-          <div className="flex flex-1 min-h-0">
-            {!showSettings && (
-              <WorkspaceSidebar
-                groups={sidebarGroups}
-                nestedGroups={nestedGroups}
-                trashedWorkspaces={trashedWorkspaces}
-                onToggleSubgroup={toggleSubgroupCollapsed}
-                onReorderWorkspaces={handleReorderWorkspaces}
-                onReorderGroups={reorderRepoGroups}
-                activeId={activeWorkspace?.id ?? null}
-                open={sidebarOpen}
-                onToggle={() => setSidebarOpen(false)}
-                onSelect={handleSelectWorkspace}
-                onToggleGroup={toggleSidebarGroup}
-                onUpdateRepoAppearance={updateRepoAppearance}
-                onNew={() => {
-                  setWizardPrefill(undefined);
-                  setShowSessionWizard(true);
-                }}
-                onCreateSession={handleCreateSession}
-                onPinProject={handlePinProject}
-                onUnpinProject={handleUnpinProject}
-                savedProjects={savedProjects}
-                onAddProject={handleAddProject}
-                onEditProject={handleEditProject}
-                onRemoveProject={handleRemoveProject}
-                onSettings={handleOpenSettings}
-                onDeleteSession={handleDeleteSession}
-                onRestoreSession={handleRestoreSession}
-                onStopSession={handleStopSession}
-                onStartSession={handleStartSession}
-                readOnly={serverAbout?.read_only}
-                canManageProjects={caps.canManageProjects}
-                sortMode={sidebarSortMode}
-                onSortModeChange={selectSidebarSortMode}
-                pluginSortRef={pluginSortRef}
-                onPluginSortChange={setPluginSortRef}
-                axis={sidebarAxis}
-                onAxisChange={setSidebarAxis}
-              />
-            )}
-
-            <div className="flex-1 flex flex-col min-h-0 min-w-0">{renderContent()}</div>
-          </div>
-
-          {showSessionWizard && (
-            <SessionWizard
-              onClose={() => {
-                setShowSessionWizard(false);
+        <div className="flex flex-1 min-h-0">
+          {!showSettings && (
+            <WorkspaceSidebar
+              groups={sidebarGroups}
+              nestedGroups={nestedGroups}
+              trashedWorkspaces={trashedWorkspaces}
+              onToggleSubgroup={toggleSubgroupCollapsed}
+              onReorderWorkspaces={handleReorderWorkspaces}
+              onReorderGroups={reorderRepoGroups}
+              activeId={activeWorkspace?.id ?? null}
+              open={sidebarOpen}
+              onToggle={() => setSidebarOpen(false)}
+              onSelect={handleSelectWorkspace}
+              onToggleGroup={toggleSidebarGroup}
+              onUpdateRepoAppearance={updateRepoAppearance}
+              onNew={() => {
                 setWizardPrefill(undefined);
+                setShowSessionWizard(true);
               }}
-              onCreated={(session?: SessionResponse) => {
-                if (session) {
-                  injectSession(session);
-                  navigate(`/session/${encodeURIComponent(session.id)}`);
-                  if (window.innerWidth < 768) setSidebarOpen(false);
-                }
-                setShowSessionWizard(false);
-                setWizardPrefill(undefined);
-              }}
-              prefill={wizardPrefill}
-              nameOnly={caps.nameOnlyWizard}
+              onCreateSession={handleCreateSession}
+              onPinProject={handlePinProject}
+              onUnpinProject={handleUnpinProject}
+              savedProjects={savedProjects}
+              onAddProject={handleAddProject}
+              onEditProject={handleEditProject}
+              onRemoveProject={handleRemoveProject}
+              onSettings={handleOpenSettings}
+              onDeleteSession={handleDeleteSession}
+              onRestoreSession={handleRestoreSession}
+              onStopSession={handleStopSession}
+              onStartSession={handleStartSession}
+              readOnly={serverAbout?.read_only}
+              canManageProjects={caps.canManageProjects}
+              sortMode={sidebarSortMode}
+              onSortModeChange={selectSidebarSortMode}
+              pluginSortRef={pluginSortRef}
+              onPluginSortChange={setPluginSortRef}
+              axis={sidebarAxis}
+              onAxisChange={setSidebarAxis}
             />
           )}
 
-          {projectForm && (
-            <ProjectFormModal
-              initial={projectForm.editProject}
-              onClose={() => setProjectForm(null)}
-              onSaved={() => refreshProjects()}
-            />
-          )}
-
-          {welcome.showWelcome && <ThemeIntro onDone={welcome.dismissWelcome} />}
-
-          {tour.tourElement}
-
-          {showHelp && <HelpOverlay onClose={() => setShowHelp(false)} />}
-
-          {tips.isOpen && (
-            <TipsModal
-              tips={tips.tips}
-              startIndex={tips.startIndex}
-              enabled={tips.enabled}
-              onMarkSeen={tips.markSeen}
-              onSetEnabled={tips.setEnabled}
-              onClose={tips.close}
-            />
-          )}
-
-          {showAbout && <AboutModal onClose={() => setShowAbout(false)} sessionId={activeSessionId} />}
-          {telemetryConsentNeeded && <TelemetryConsentModal onChoose={handleTelemetryConsent} />}
-
-          {deletingSession && deletingCleanupDefaults && (
-            <DeleteSessionDialog
-              sessionTitle={deletingSession.title}
-              branchName={deletingBranchName}
-              hasManagedWorktree={deletingSessions.some((session) => session.has_cleanable_worktree ?? false)}
-              isSandboxed={deletingSessions.some((session) => session.is_sandboxed)}
-              isScratch={deletingSessions.some((session) => session.scratch)}
-              cleanupDefaults={deletingCleanupDefaults}
-              defaultToTrash={deletingDefaultToTrash}
-              affectedSessions={deletingSessions.map((session) => ({
-                id: session.id,
-                title: session.title,
-                isSandboxed: session.is_sandboxed,
-              }))}
-              onConfirm={handleConfirmDelete}
-              onTrash={handleConfirmTrash}
-              onCancel={() => setDeletingWorkspaceId(null)}
-            />
-          )}
-
-          {stoppingSession && (
-            <StopSessionDialog
-              sessionTitle={stoppingSession.title}
-              onConfirm={handleConfirmStop}
-              onCancel={() => setStoppingWorkspaceId(null)}
-            />
-          )}
-
-          <CommandPalette
-            open={showPalette}
-            onClose={() => {
-              setShowPalette(false);
-              setPaletteQuery("");
-            }}
-            actions={[...commandActions, ...conversationActions, ...settingsCommands, ...pluginCommandActions]}
-            onSearchChange={setPaletteQuery}
-            searching={conversationSearching}
-          />
-
-          {snoozeTargetId && (
-            <SnoozeModal
-              title="Snooze session"
-              onCancel={() => setSnoozeTargetId(null)}
-              onPick={(minutes) => {
-                const id = snoozeTargetId;
-                setSnoozeTargetId(null);
-                void setSessionSnooze(id, minutes).then((result) => {
-                  if (result) applySession(result);
-                  else reportError("Failed to snooze session");
-                });
-              }}
-            />
-          )}
-
-          {activeWorkspace && activeSession && (
-            <MobileRightPanelPicker
-              open={pickerOpen && singlePane}
-              active={rightPanelView}
-              pluginPanes={pluginPanes}
-              onSelect={handlePickView}
-              onClose={() => setPickerOpen(false)}
-            />
-          )}
-
-          <textarea
-            ref={keyboardProxyRef}
-            aria-hidden="true"
-            tabIndex={-1}
-            className="fixed opacity-0 w-0 h-0 pointer-events-none"
-            style={{ top: -9999, left: -9999 }}
-          />
+          <div className="flex-1 flex flex-col min-h-0 min-w-0">{renderContent()}</div>
         </div>
-      )}
+
+        {showSessionWizard && (
+          <SessionWizard
+            onClose={() => {
+              setShowSessionWizard(false);
+              setWizardPrefill(undefined);
+            }}
+            onCreated={(session?: SessionResponse) => {
+              if (session) {
+                injectSession(session);
+                navigate(`/session/${encodeURIComponent(session.id)}`);
+                if (window.innerWidth < 768) setSidebarOpen(false);
+              }
+              setShowSessionWizard(false);
+              setWizardPrefill(undefined);
+            }}
+            prefill={wizardPrefill}
+            nameOnly={caps.nameOnlyWizard}
+          />
+        )}
+
+        {projectForm && (
+          <ProjectFormModal
+            initial={projectForm.editProject}
+            onClose={() => setProjectForm(null)}
+            onSaved={() => refreshProjects()}
+          />
+        )}
+
+        {welcome.showWelcome && <ThemeIntro onDone={welcome.dismissWelcome} />}
+
+        {tour.tourElement}
+
+        {showHelp && <HelpOverlay onClose={() => setShowHelp(false)} />}
+
+        {tips.isOpen && (
+          <TipsModal
+            tips={tips.tips}
+            startIndex={tips.startIndex}
+            enabled={tips.enabled}
+            onMarkSeen={tips.markSeen}
+            onSetEnabled={tips.setEnabled}
+            onClose={tips.close}
+          />
+        )}
+
+        {showAbout && <AboutModal onClose={() => setShowAbout(false)} sessionId={activeSessionId} />}
+        {telemetryConsentNeeded && <TelemetryConsentModal onChoose={handleTelemetryConsent} />}
+
+        {deletingSession && deletingCleanupDefaults && (
+          <DeleteSessionDialog
+            sessionTitle={deletingSession.title}
+            branchName={deletingBranchName}
+            hasManagedWorktree={deletingSessions.some((session) => session.has_cleanable_worktree ?? false)}
+            isSandboxed={deletingSessions.some((session) => session.is_sandboxed)}
+            isScratch={deletingSessions.some((session) => session.scratch)}
+            cleanupDefaults={deletingCleanupDefaults}
+            defaultToTrash={deletingDefaultToTrash}
+            affectedSessions={deletingSessions.map((session) => ({
+              id: session.id,
+              title: session.title,
+              isSandboxed: session.is_sandboxed,
+            }))}
+            onConfirm={handleConfirmDelete}
+            onTrash={handleConfirmTrash}
+            onCancel={() => setDeletingWorkspaceId(null)}
+          />
+        )}
+
+        {stoppingSession && (
+          <StopSessionDialog
+            sessionTitle={stoppingSession.title}
+            onConfirm={handleConfirmStop}
+            onCancel={() => setStoppingWorkspaceId(null)}
+          />
+        )}
+
+        <CommandPalette
+          open={showPalette}
+          onClose={() => {
+            setShowPalette(false);
+            setPaletteQuery("");
+          }}
+          actions={[...commandActions, ...conversationActions, ...settingsCommands, ...pluginCommandActions]}
+          onSearchChange={setPaletteQuery}
+          searching={conversationSearching}
+        />
+
+        {snoozeTargetId && (
+          <SnoozeModal
+            title="Snooze session"
+            onCancel={() => setSnoozeTargetId(null)}
+            onPick={(minutes) => {
+              const id = snoozeTargetId;
+              setSnoozeTargetId(null);
+              void setSessionSnooze(id, minutes).then((result) => {
+                if (result) applySession(result);
+                else reportError("Failed to snooze session");
+              });
+            }}
+          />
+        )}
+
+        {activeWorkspace && activeSession && (
+          <MobileRightPanelPicker
+            open={pickerOpen && singlePane}
+            active={rightPanelView}
+            pluginPanes={pluginPanes}
+            onSelect={handlePickView}
+            onClose={() => setPickerOpen(false)}
+          />
+        )}
+
+        <textarea
+          ref={keyboardProxyRef}
+          aria-hidden="true"
+          tabIndex={-1}
+          className="fixed opacity-0 w-0 h-0 pointer-events-none"
+          style={{ top: -9999, left: -9999 }}
+        />
+      </div>
     </AcpPrefsProvider>
   );
 }
