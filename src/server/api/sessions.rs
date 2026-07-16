@@ -4531,6 +4531,7 @@ pub async fn create_session(
         // stamps these, through create_structured_session. See #2897.
         created_by_plugin: None,
         plugin_create_idempotency: None,
+        pending_initial_turn: None,
         #[cfg(feature = "serve")]
         view: body.view,
         #[cfg(feature = "serve")]
@@ -4547,7 +4548,7 @@ pub async fn create_session(
 
     match state
         .session_service
-        .create_structured_session(spec, None, None)
+        .create_structured_session(spec, None, None, None)
         .await
     {
         Ok((outcome, _created)) => {
